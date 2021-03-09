@@ -45,6 +45,7 @@ class CarsApiTests(APITestCase):
         data = {'make': 'DeLorean', 'model': 'DMC-12'}
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 400)
+        self.assertEqual(Car.objects.count(), 3)
 
 
     def test_car_create_correct_make_wrong_model(self):
@@ -52,6 +53,7 @@ class CarsApiTests(APITestCase):
         data = {'make': 'Porsche', 'model': 'Testarossa'}
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 400)
+        self.assertEqual(Car.objects.count(), 3)
 
 
     def test_car_create_already_exists(self):
@@ -60,6 +62,7 @@ class CarsApiTests(APITestCase):
         data = {'make': 'Porsche', 'model': '911'}
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 400)
+        self.assertEqual(Car.objects.count(), 3)
 
 
     def test_car_delete(self):
@@ -80,9 +83,9 @@ class CarsApiTests(APITestCase):
         url = reverse('car-rate')
         data = {'car_id': 2, 'rating': 5}
         response = self.client.post(url, data)
-        ratings_count = Car.objects.get(pk=2).ratings.count()
+        car2_ratings_count = Car.objects.get(pk=2).ratings.count()
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(ratings_count, 3)
+        self.assertEqual(car2_ratings_count, 3)
 
 
     def test_car_rate_wrong_id(self):
@@ -90,6 +93,7 @@ class CarsApiTests(APITestCase):
         data = {'car_id': 4, 'rating': 5}
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 404)
+        self.assertEqual(Rating.objects.count(), 3)
 
 
     def test_car_rate_wrong_rating(self):
@@ -100,6 +104,7 @@ class CarsApiTests(APITestCase):
         response2 = self.client.post(url, data2)
         self.assertEqual(response1.status_code, 400)
         self.assertEqual(response2.status_code, 400)
+        self.assertEqual(Rating.objects.count(), 3)
 
 
     def test_popular_car_list(self):
