@@ -3,7 +3,7 @@ from rest_framework.validators import UniqueTogetherValidator
 from django.db.models import Avg
 import requests
 
-from .models import Car
+from .models import Car, Rating
 
 
 def car_exists_validator(values):
@@ -49,3 +49,14 @@ class PopularCarSerializer(serializers.ModelSerializer):
 
     def get_rates_number(self, obj):
         return obj.ratings.count()
+
+
+class CarRatingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Rating
+        fields = ['car', 'rating']
+
+    def validate_rating(self, value):
+        if not (isinstance(value, int) and 1 <= value <= 5):
+            raise serializers.ValidationError('Rating must be a number from 1 to 5.')
+        return value

@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 
 from .models import Car
-from .serializers import CarSerializer, PopularCarSerializer
+from .serializers import CarSerializer, PopularCarSerializer, CarRatingSerializer
 
 
 @api_view(['GET', 'POST'])
@@ -20,6 +20,22 @@ def car_list_and_create_view(request):
             return Response(serializer.data, status=201)
         else:
             return Response(serializer.errors, status=400)
+
+
+@api_view(['POST'])
+def rate_car_view(request):
+    car_id = request.data['car_id']
+    qs = Car.objects.filter(pk=car_id)
+    if qs.exists():
+        data = {'car': car_id, 'rating': request.data['rating']}
+        serializer = CarRatingSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        else:
+            return Response(serializer.errors, status=400)
+    else:
+        return Response(f'Car with id {car_id} does not exist', status=404)
 
 
 @api_view(['DELETE'])
