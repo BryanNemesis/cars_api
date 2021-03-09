@@ -37,7 +37,11 @@ class CarSerializer(serializers.ModelSerializer):
     avg_rating = serializers.SerializerMethodField(read_only=True)
 
     def get_avg_rating(self, obj):
-        return obj.ratings.all().aggregate(Avg('rating'))['rating__avg']
+        avg_rating = obj.ratings.all().aggregate(Avg('rating'))['rating__avg']
+        if avg_rating:
+            return round(avg_rating, 1)
+        else:
+            return None
 
 
 class PopularCarSerializer(serializers.ModelSerializer):
