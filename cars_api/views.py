@@ -47,7 +47,7 @@ def car_delete_view(request, car_id):
         car.delete()
         return Response(serializer.data, status=200)
     else:
-        return Response({}, status=404)
+        return Response(f'Car with id {car_id} does not exist', status=404)
 
 
 @api_view(['GET'])
