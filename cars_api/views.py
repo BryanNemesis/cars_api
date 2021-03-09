@@ -23,7 +23,7 @@ def car_list_and_create_view(request):
 
 
 @api_view(['POST'])
-def rate_car_view(request):
+def car_rate_view(request):
     car_id = request.data['car_id']
     qs = Car.objects.filter(pk=car_id)
     if qs.exists():
