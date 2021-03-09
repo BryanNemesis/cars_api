@@ -1,17 +1,24 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 from django.db.models import Avg
+import requests
 
 from .models import Car
 
 
-
 def car_exists_validator(values):
-    # TODO: add checking against https://vpic.nhtsa.dot.gov/api/ if such car exists
-    car_exists = True
-    print(values['make'], values['model'])
-    if not car_exists:
-        raise serializers.ValidationError('A car like this does not exist.')
+    api_url = 'https://vpic.nhtsa.dot.gov/api/vehicles/'
+    make, model = values['make'], values['model']
+
+    makes_json = requests.get(f'{api_url}/GetAllMakes?format=json')
+    makes = [d['Make_Name'] for d in makes_json.json()['Results']]
+    if not make.upper() in makes:
+        raise serializers.ValidationError(f'Car make {make} does not exist.')
+    
+    models_json = requests.get(f'{api_url}/GetModelsForMake/{make}?format=json')
+    models = [d['Model_Name'] for d in models_json.json()['Results']]
+    if not model in models:
+        raise serializers.ValidationError(f'Car model {model} does not exist for make {make}.')
 
 
 class CarSerializer(serializers.ModelSerializer):
@@ -19,12 +26,12 @@ class CarSerializer(serializers.ModelSerializer):
         model = Car
         fields = ['id', 'make', 'model', 'avg_rating']
         validators = [
+            car_exists_validator,
             UniqueTogetherValidator(
                 queryset=Car.objects.all(),
                 fields=['make', 'model'],
                 message='A car like this already exists in the database.'
             ),
-            car_exists_validator
         ]
 
     avg_rating = serializers.SerializerMethodField(read_only=True)
